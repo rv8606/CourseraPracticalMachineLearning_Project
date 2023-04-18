@@ -1531,9 +1531,15 @@ the “problem_id”.</p></li>
 ## Version 5.5.1 Copyright (c) 2006-2021 Togaware Pty Ltd.
 ## Entrez &#39;rattle()&#39; pour secouer, faire vibrer, et faire défiler vos données.</code></pre>
 <pre><code>## corrplot 0.92 loaded</code></pre>
+<pre class="r"><code>trainingSourceData = read.csv(&quot;./pml-training.csv&quot;)
+testingSourceData = read.csv(&quot;./pml-testing.csv&quot;)</code></pre>
+<pre class="r"><code>dim(trainingSourceData);dim(testingSourceData)</code></pre>
 <pre><code>## [1] 19622   160</code></pre>
 <pre><code>## [1]  20 160</code></pre>
 <p>We exclude columns that are mostly composed of NAs.</p>
+<pre class="r"><code>isWeak &lt;- colSums(is.na(trainingSourceData) | trainingSourceData == &quot;&quot;) &gt; (nrow(trainingSourceData)*0.75)
+myTraining &lt;- trainingSourceData[,!isWeak]
+dim(myTraining)</code></pre>
 <pre><code>## [1] 19622    60</code></pre>
 <p>The first seven columns (“X”, “user_name”, “raw_timestamp_part_1”
 “raw_timestamp_part_2” “cvtd_timestamp”, “new_window” and “num_window”)
@@ -1543,11 +1549,17 @@ predictors, unless they assume that at certain times, some individuals
 would have reasons to be more successful or not (difficult digestion,
 laborious awakening…), which would introduce a bias in our results. So
 we will exclude them:</p>
+<pre class="r"><code>myTraining &lt;- myTraining[,-c(1:7)]
+dim(myTraining)</code></pre>
 <pre><code>## [1] 19622    53</code></pre>
 </div>
 <div id="model-selection" class="section level1">
 <h1>Model selection</h1>
 <p>Let’s build training and testing sets :</p>
+<pre class="r"><code>inTrain &lt;- createDataPartition(myTraining$classe, p=0.6, list=FALSE)
+training &lt;- myTraining[ inTrain,]
+testing &lt;- myTraining[-inTrain,]
+dim(training); dim(testing)</code></pre>
 <pre><code>## [1] 11776    53</code></pre>
 <pre><code>## [1] 7846   53</code></pre>
 <div id="cross-validation" class="section level2">
@@ -1783,9 +1795,9 @@ candidate but remains <strong>below the Random Forest</strong> one.</p>
 </div>
 </div>
 </div>
-<div id="in-sample-error-rate" class="section level2">
-<h2>In sample error rate:</h2>
-<p>The in-sample error rate measures the error rate when we predict the
+<div id="out-sample-error-rate" class="section level2">
+<h2>Out sample error rate:</h2>
+<p>The out-sample error rate measures the error rate when we predict the
 output from the sample and compare them with the actual values. Let’s
 calculate this rate for our 3 models:</p>
 <ul>

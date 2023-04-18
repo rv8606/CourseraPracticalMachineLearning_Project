@@ -61,7 +61,15 @@ The given data sets are
 ```
 
 
+```r
+trainingSourceData = read.csv("./pml-training.csv")
+testingSourceData = read.csv("./pml-testing.csv")
+```
 
+
+```r
+dim(trainingSourceData);dim(testingSourceData)
+```
 
 ```
 ## [1] 19622   160
@@ -74,12 +82,23 @@ The given data sets are
 We exclude columns that are mostly composed of NAs.
 
 
+```r
+isWeak <- colSums(is.na(trainingSourceData) | trainingSourceData == "") > (nrow(trainingSourceData)*0.75)
+myTraining <- trainingSourceData[,!isWeak]
+dim(myTraining)
+```
+
 ```
 ## [1] 19622    60
 ```
 
 The first seven columns ("X", "user_name", "raw_timestamp_part_1" "raw_timestamp_part_2" "cvtd_timestamp", "new_window" and "num_window") contain the names of people, schedules and information about how the application will be displayed. It is obvious that they will not be good predictors, unless they assume that at certain times, some individuals would have reasons to be more successful or not (difficult digestion, laborious awakening...), which would introduce a bias in our results. So we will exclude them:
 
+
+```r
+myTraining <- myTraining[,-c(1:7)]
+dim(myTraining)
+```
 
 ```
 ## [1] 19622    53
@@ -89,6 +108,13 @@ The first seven columns ("X", "user_name", "raw_timestamp_part_1" "raw_timestamp
 
 Let's build training and testing sets :
 
+
+```r
+inTrain <- createDataPartition(myTraining$classe, p=0.6, list=FALSE)
+training <- myTraining[ inTrain,]
+testing <- myTraining[-inTrain,]
+dim(training); dim(testing)
+```
 
 ```
 ## [1] 11776    53
@@ -362,9 +388,9 @@ The best model for this method is the n.trees 150 with a 0.93 accuracy.
 
 With an **accuracy of 0.96**, this model is a good candidate but remains **below the Random Forest** one.
 
-## In sample error rate:
+## Out sample error rate:
 
-The in-sample error rate measures the error rate when we predict the output from the sample and compare them with the actual values. Let's calculate this rate for our 3 models:
+The out-sample error rate measures the error rate when we predict the output from the sample and compare them with the actual values. Let's calculate this rate for our 3 models:
 
 -   Regression trees:
 
